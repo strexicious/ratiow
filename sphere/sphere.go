@@ -31,9 +31,9 @@ func (s *Sphere) Hit(r vec.Ray, t_min, t_max float64) (hit bool, rec *hittable.H
 
 	// Find the nearest root that lies in the acceptable range.
 	root := (-half_b - sqrtd) / a
-	if root < t_min || t_max < root {
+	if root <= t_min || t_max <= root {
 		root = (-half_b + sqrtd) / a
-		if root < t_min || t_max < root {
+		if root <= t_min || t_max <= root {
 			hit = false
 			return
 		}
