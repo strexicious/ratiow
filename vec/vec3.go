@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"io"
 	"math"
+
+	"github.com/strexicious/ratiow/utils"
 )
 
 type Vec3 struct {
@@ -92,6 +94,13 @@ func (v Vec3) Cross(u Vec3) Vec3 {
 
 func (v Vec3) Normalised() Vec3 {
 	return v.Unscale(v.Norm())
+}
+
+func (v Vec3) ClampScalar(min, max float64) Vec3 {
+	v.e[0] = utils.Clamp(v.e[0], min, max)
+	v.e[1] = utils.Clamp(v.e[1], min, max)
+	v.e[2] = utils.Clamp(v.e[2], min, max)
+	return v
 }
 
 func (v Vec3) WriteVec3(w io.Writer) {
