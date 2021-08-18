@@ -3,8 +3,10 @@ package main
 import (
 	"fmt"
 	"math"
+	"math/rand"
 	"os"
 
+	"github.com/strexicious/ratiow/camera"
 	"github.com/strexicious/ratiow/hittable"
 	"github.com/strexicious/ratiow/sphere"
 	"github.com/strexicious/ratiow/vec"
@@ -27,6 +29,7 @@ func main() {
 	const aspect_ratio = 16.0 / 9.0
 	const width = 400
 	const height = int(width / aspect_ratio)
+	const samples_per_pixel = 100
 
 	// World
 
@@ -40,17 +43,7 @@ func main() {
 
 	// Camera
 
-	const viewport_height = 2.0
-	const viewport_width = aspect_ratio * viewport_height
-	const focal_length = 1.0
-
-	origin := vec.NewPoint3(0, 0, 0)
-	horizontal := vec.NewVec3(viewport_width, 0, 0)
-	vertical := vec.NewVec3(0, viewport_height, 0)
-	lower_left_corner := origin.
-		Sub(horizontal.Unscale(2.0)).
-		Sub(vertical.Unscale(2.0)).
-		Sub(vec.NewVec3(0, 0, focal_length))
+	cam := camera.DefaultCamera()
 
 	// Render
 
@@ -59,11 +52,14 @@ func main() {
 	for j := height - 1; j >= 0; j-- {
 		print("\rScanlines remaining: ", j, " ")
 		for i := 0; i < width; i++ {
-			u := float64(i) / float64(width-1)
-			v := float64(j) / float64(height-1)
-			r := vec.NewRay(origin, lower_left_corner.Add(horizontal.Scale(u)).Add(vertical.Scale(v)).Sub(origin))
-			c := ray_color(r, world)
-			c.WriteColor(os.Stdout)
+			pixel_color := vec.ZeroColor()
+			for s := 0; s < samples_per_pixel; s++ {
+				u := (float64(i) + rand.Float64()) / float64(width-1)
+				v := (float64(j) + rand.Float64()) / float64(height-1)
+				r := cam.GetRay(u, v)
+				pixel_color = pixel_color.Add(ray_color(r, world))
+			}
+			pixel_color.WriteColor(os.Stdout, samples_per_pixel)
 		}
 	}
 
