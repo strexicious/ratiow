@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io"
 	"math"
+	"math/rand"
 
 	"github.com/strexicious/ratiow/utils"
 )
@@ -105,4 +106,35 @@ func (v Vec3) ClampScalar(min, max float64) Vec3 {
 
 func (v Vec3) WriteVec3(w io.Writer) {
 	fmt.Fprintf(w, "%g %g %g\n", v.X(), v.Y(), v.Z())
+}
+
+func RandomVec3() Vec3 {
+	x, y, z := rand.Float64(), rand.Float64(), rand.Float64()
+	return NewVec3(x, y, z)
+}
+
+func RandomVec3Range(min, max float64) Vec3 {
+	return NewVec3(min, min, min).Add(RandomVec3().Scale(max - min))
+}
+
+func RandomVec3InsideUnitSphere() Vec3 {
+	for {
+		v := RandomVec3Range(-1, 1)
+		if v.NormSquared() < 1 {
+			return v
+		}
+	}
+}
+
+func RandomVec3InsideHemisphere(normal Vec3) Vec3 {
+	random := RandomVec3InsideUnitSphere()
+	if random.Dot(normal) > 0 {
+		return random
+	} else {
+		return random.Neg()
+	}
+}
+
+func RandomUnitVec3() Vec3 {
+	return RandomVec3InsideUnitSphere().Normalised()
 }

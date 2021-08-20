@@ -12,9 +12,15 @@ import (
 	"github.com/strexicious/ratiow/vec"
 )
 
-func ray_color(r vec.Ray, world *hittable.HittableList) vec.Color {
-	if hit, hr := world.Hit(r, 0, math.Inf(1)); hit {
-		return vec.NewColor(1, 1, 1).Add(hr.Normal).Scale(0.5)
+func ray_color(r vec.Ray, world *hittable.HittableList, depth int32) vec.Color {
+	// If we've exceeded the ray bounce limit, no more light is gathered.
+	if depth <= 0 {
+		return vec.NewColor(0, 0, 0)
+	}
+
+	if hit, hr := world.Hit(r, 0.001, math.Inf(1)); hit {
+		target := hr.P.Add(hr.Normal).Add(vec.RandomUnitVec3())
+		return ray_color(vec.NewRay(hr.P, target.Sub(hr.P)), world, depth-1).Scale(0.5)
 	}
 
 	unit_direction := r.Direction().Normalised()
@@ -30,6 +36,7 @@ func main() {
 	const width = 400
 	const height = int(width / aspect_ratio)
 	const samples_per_pixel = 100
+	const max_depth = 50
 
 	// World
 
@@ -57,7 +64,7 @@ func main() {
 				u := (float64(i) + rand.Float64()) / float64(width-1)
 				v := (float64(j) + rand.Float64()) / float64(height-1)
 				r := cam.GetRay(u, v)
-				pixel_color = pixel_color.Add(ray_color(r, world))
+				pixel_color = pixel_color.Add(ray_color(r, world, max_depth))
 			}
 			pixel_color.WriteColor(os.Stdout, samples_per_pixel)
 		}
