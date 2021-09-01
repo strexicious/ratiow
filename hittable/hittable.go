@@ -7,7 +7,9 @@ type HitRecord struct {
 	Normal    vec.Vec3
 	T         float64
 	FrontFace bool
+	Mat       Material
 }
+
 type Hittable interface {
 	Hit(r vec.Ray, t_min, t_max float64) (hit bool, rec *HitRecord)
 }
