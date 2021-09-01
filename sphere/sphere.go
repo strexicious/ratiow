@@ -10,10 +10,11 @@ import (
 type Sphere struct {
 	center vec.Point3
 	radius float64
+	mat    hittable.Material
 }
 
-func NewSphere(cen vec.Point3, r float64) Sphere {
-	return Sphere{center: cen, radius: r}
+func NewSphere(cen vec.Point3, r float64, m hittable.Material) Sphere {
+	return Sphere{center: cen, radius: r, mat: m}
 }
 
 func (s *Sphere) Hit(r vec.Ray, t_min, t_max float64) (hit bool, rec *hittable.HitRecord) {
@@ -42,6 +43,7 @@ func (s *Sphere) Hit(r vec.Ray, t_min, t_max float64) (hit bool, rec *hittable.H
 	rec = new(hittable.HitRecord)
 	rec.T = root
 	rec.P = r.At(root)
+	rec.Mat = s.mat
 
 	outward_normal := rec.P.Sub(s.center).Unscale(s.radius)
 	rec.SetFaceNormal(r, outward_normal)
