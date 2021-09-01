@@ -97,6 +97,24 @@ func (v Vec3) Normalised() Vec3 {
 	return v.Unscale(v.Norm())
 }
 
+func (v Vec3) IsNearZero() bool {
+	EPSILON := 1e-8
+	return math.Abs(v.e[0]) < EPSILON &&
+		math.Abs(v.e[1]) < EPSILON &&
+		math.Abs(v.e[2]) < EPSILON
+}
+
+func (v Vec3) Reflect(normal Vec3) Vec3 {
+	return v.Sub(normal.Scale(2 * v.Dot(normal)))
+}
+
+func (v Vec3) ComponentWiseScale(s Vec3) Vec3 {
+	v.e[0] *= s.e[0]
+	v.e[1] *= s.e[1]
+	v.e[2] *= s.e[2]
+	return v
+}
+
 func (v Vec3) ClampScalar(min, max float64) Vec3 {
 	v.e[0] = utils.Clamp(v.e[0], min, max)
 	v.e[1] = utils.Clamp(v.e[1], min, max)
