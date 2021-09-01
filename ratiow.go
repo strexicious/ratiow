@@ -46,19 +46,20 @@ func main() {
 	// World
 
 	ground_mat := materials.Lambertian{Albedo: vec.NewColor(0.8, 0.8, 0.0)}
-	center_mat := materials.Lambertian{Albedo: vec.NewColor(0.7, 0.3, 0.3)}
-	left_mat := materials.Metal{Albedo: vec.NewColor(0.8, 0.8, 0.8), Fuzz: 0.3}
-	right_mat := materials.Metal{Albedo: vec.NewColor(0.8, 0.6, 0.2), Fuzz: 1}
+	center_mat := materials.Lambertian{Albedo: vec.NewColor(0.1, 0.2, 0.5)}
+	left_mat := materials.Dielectric{Ir: 1.5}
+	right_mat := materials.Metal{Albedo: vec.NewColor(0.8, 0.6, 0.2), Fuzz: 0.0}
 
 	spheres := []sphere.Sphere{
 		sphere.NewSphere(vec.NewPoint3(0, -100.5, -1), 100, &ground_mat),
 		sphere.NewSphere(vec.NewPoint3(0, 0, -1), 0.5, &center_mat),
 		sphere.NewSphere(vec.NewPoint3(-1, 0, -1), 0.5, &left_mat),
+		sphere.NewSphere(vec.NewPoint3(-1, 0, -1), -0.4, &left_mat),
 		sphere.NewSphere(vec.NewPoint3(1, 0, -1), 0.5, &right_mat),
 	}
 
 	world := new(hittable.HittableList)
-	world.Add(&spheres[0], &spheres[1], &spheres[2], &spheres[3])
+	world.Add(&spheres[0], &spheres[1], &spheres[2], &spheres[3], &spheres[4])
 
 	// Camera
 
