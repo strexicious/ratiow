@@ -8,6 +8,7 @@ import (
 
 	"github.com/strexicious/ratiow/camera"
 	"github.com/strexicious/ratiow/hittable"
+	"github.com/strexicious/ratiow/hittable/materials"
 	"github.com/strexicious/ratiow/sphere"
 	"github.com/strexicious/ratiow/vec"
 )
@@ -19,8 +20,12 @@ func ray_color(r vec.Ray, world *hittable.HittableList, depth int32) vec.Color {
 	}
 
 	if hit, hr := world.Hit(r, 0.001, math.Inf(1)); hit {
-		target := hr.P.Add(hr.Normal).Add(vec.RandomUnitVec3())
-		return ray_color(vec.NewRay(hr.P, target.Sub(hr.P)), world, depth-1).Scale(0.5)
+		did_scatter, scattered, attenuation := hr.Mat.Scatter(r, hr)
+		if did_scatter {
+			return ray_color(scattered, world, depth-1).ComponentWiseScale(attenuation)
+		}
+
+		return vec.ZeroColor()
 	}
 
 	unit_direction := r.Direction().Normalised()
@@ -40,13 +45,20 @@ func main() {
 
 	// World
 
+	ground_mat := materials.Lambertian{Albedo: vec.NewColor(0.8, 0.8, 0.0)}
+	center_mat := materials.Lambertian{Albedo: vec.NewColor(0.7, 0.3, 0.3)}
+	left_mat := materials.Metal{Albedo: vec.NewColor(0.8, 0.8, 0.8), Fuzz: 0.3}
+	right_mat := materials.Metal{Albedo: vec.NewColor(0.8, 0.6, 0.2), Fuzz: 1}
+
 	spheres := []sphere.Sphere{
-		sphere.NewSphere(vec.NewPoint3(0, 0, -1), 0.5),
-		sphere.NewSphere(vec.NewPoint3(0, -100.5, -1), 100),
+		sphere.NewSphere(vec.NewPoint3(0, -100.5, -1), 100, &ground_mat),
+		sphere.NewSphere(vec.NewPoint3(0, 0, -1), 0.5, &center_mat),
+		sphere.NewSphere(vec.NewPoint3(-1, 0, -1), 0.5, &left_mat),
+		sphere.NewSphere(vec.NewPoint3(1, 0, -1), 0.5, &right_mat),
 	}
 
 	world := new(hittable.HittableList)
-	world.Add(&spheres[0], &spheres[1])
+	world.Add(&spheres[0], &spheres[1], &spheres[2], &spheres[3])
 
 	// Camera
 
