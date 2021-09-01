@@ -108,6 +108,13 @@ func (v Vec3) Reflect(normal Vec3) Vec3 {
 	return v.Sub(normal.Scale(2 * v.Dot(normal)))
 }
 
+func (v Vec3) Refract(normal Vec3, eta_ratio float64) Vec3 {
+	cos_theta := math.Min(-v.Dot(normal), 1.0)
+	r_out_perp := normal.Scale(cos_theta).Add(v).Scale(eta_ratio)
+	r_out_parallel := normal.Scale(-math.Sqrt(math.Abs(1 - r_out_perp.NormSquared())))
+	return r_out_perp.Add(r_out_parallel)
+}
+
 func (v Vec3) ComponentWiseScale(s Vec3) Vec3 {
 	v.e[0] *= s.e[0]
 	v.e[1] *= s.e[1]
