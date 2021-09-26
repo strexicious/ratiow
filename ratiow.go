@@ -54,7 +54,7 @@ func main() {
 		sphere.NewSphere(vec.NewPoint3(0, -100.5, -1), 100, &ground_mat),
 		sphere.NewSphere(vec.NewPoint3(0, 0, -1), 0.5, &center_mat),
 		sphere.NewSphere(vec.NewPoint3(-1, 0, -1), 0.5, &left_mat),
-		sphere.NewSphere(vec.NewPoint3(-1, 0, -1), -0.4, &left_mat),
+		sphere.NewSphere(vec.NewPoint3(-1, 0, -1), -0.45, &left_mat),
 		sphere.NewSphere(vec.NewPoint3(1, 0, -1), 0.5, &right_mat),
 	}
 
@@ -63,7 +63,7 @@ func main() {
 
 	// Camera
 
-	cam := camera.DefaultCamera()
+	cam := camera.New(vec.NewPoint3(-2, 2, 1), vec.NewPoint3(0, 0, -1), vec.NewVec3(0, 1, 0), 20, aspect_ratio)
 
 	// Render
 

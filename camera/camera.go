@@ -1,27 +1,35 @@
 package camera
 
-import "github.com/strexicious/ratiow/vec"
+import (
+	"math"
+
+	"github.com/strexicious/ratiow/utils"
+	"github.com/strexicious/ratiow/vec"
+)
 
 type Camera struct {
 	origin, lower_left_corner vec.Point3
 	horizontal, vertical      vec.Vec3
 }
 
-func DefaultCamera() (cam *Camera) {
-	const aspect_ratio = 16.0 / 9.0
-	const viewport_height = 2.0
-	const viewport_width = aspect_ratio * viewport_height
-	const focal_length = 1.0
+func New(lookfrom, lookat vec.Point3, vup vec.Vec3, vfov, aspect_ratio float64) (cam *Camera) {
+	theta := utils.Deg2Radians(vfov)
+	h := math.Tan(theta / 2)
+	viewport_height := 2 * h
+	viewport_width := aspect_ratio * viewport_height
+
+	w := lookfrom.Sub(lookat).Normalised()
+	u := vup.Cross(w).Normalised()
+	v := w.Cross(u)
 
 	cam = new(Camera)
-	cam.horizontal = vec.NewVec3(viewport_width, 0, 0)
-	cam.vertical = vec.NewVec3(0, viewport_height, 0)
-	cam.origin = vec.NewPoint3(0, 0, 0)
+	cam.origin = lookfrom
+	cam.horizontal = u.Scale(viewport_width)
+	cam.vertical = v.Scale(viewport_height)
 	cam.lower_left_corner = cam.origin.
 		Sub(cam.horizontal.Unscale(2.0)).
 		Sub(cam.vertical.Unscale(2.0)).
-		Sub(vec.NewVec3(0, 0, focal_length))
-
+		Sub(w)
 	return
 }
 
