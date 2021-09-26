@@ -163,3 +163,13 @@ func RandomVec3InsideHemisphere(normal Vec3) Vec3 {
 func RandomUnitVec3() Vec3 {
 	return RandomVec3InsideUnitSphere().Normalised()
 }
+
+func RandomInUnitDisk() Vec3 {
+	for {
+		p := NewVec3(rand.Float64()*2-1, rand.Float64()*2-1, 0)
+		if p.NormSquared() >= 1 {
+			continue
+		}
+		return p
+	}
+}
