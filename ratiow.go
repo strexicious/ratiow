@@ -13,6 +13,58 @@ import (
 	"github.com/strexicious/ratiow/vec"
 )
 
+func random_scene() (world *hittable.HittableList) {
+	world = new(hittable.HittableList)
+
+	ground_mat := materials.Lambertian{Albedo: vec.NewColor(0.5, 0.5, 0.5)}
+	ground := sphere.NewSphere(vec.NewPoint3(0, -1000, 0), 1000, &ground_mat)
+	world.Add(&ground)
+
+	for a := -11; a < 11; a++ {
+		for b := -11; b < 11; b++ {
+			chosen_mat := rand.Float64()
+			center := vec.NewPoint3(float64(a)+0.9*rand.Float64(), 0.2, float64(b)+0.9*rand.Float64())
+
+			if center.Sub(vec.NewPoint3(4, 0.2, 0)).Norm() > 0.9 {
+				var sphere_material hittable.Material
+
+				if chosen_mat < 0.8 {
+					// diffuse
+					albedo := vec.RandomColor()
+					sphere_material = &materials.Lambertian{Albedo: albedo}
+					sphere := sphere.NewSphere(center, 0.2, sphere_material)
+					world.Add(&sphere)
+				} else if chosen_mat < 0.95 {
+					// metal
+					albedo := vec.RandomColorRange(0.5, 1)
+					fuzz := rand.Float64() * 0.5
+					sphere_material = &materials.Metal{Albedo: albedo, Fuzz: fuzz}
+					sphere := sphere.NewSphere(center, 0.2, sphere_material)
+					world.Add(&sphere)
+				} else {
+					// glass
+					sphere_material = &materials.Dielectric{Ir: 1.5}
+					sphere := sphere.NewSphere(center, 0.2, sphere_material)
+					world.Add(&sphere)
+				}
+			}
+		}
+	}
+
+	mat1 := materials.Dielectric{Ir: 1.5}
+	sphere1 := sphere.NewSphere(vec.NewPoint3(0, 1, 0), 1.0, &mat1)
+
+	mat2 := materials.Lambertian{Albedo: vec.NewColor(0.4, 0.2, 0.1)}
+	sphere2 := sphere.NewSphere(vec.NewPoint3(-4, 1, 0), 1.0, &mat2)
+
+	mat3 := materials.Metal{Albedo: vec.NewColor(0.7, 0.6, 0.5), Fuzz: 0.0}
+	sphere3 := sphere.NewSphere(vec.NewPoint3(4, 1, 0), 1.0, &mat3)
+
+	world.Add(&sphere1, &sphere2, &sphere3)
+
+	return world
+}
+
 func ray_color(r vec.Ray, world *hittable.HittableList, depth int32) vec.Color {
 	// If we've exceeded the ray bounce limit, no more light is gathered.
 	if depth <= 0 {
@@ -37,37 +89,25 @@ func main() {
 
 	// Image
 
-	const aspect_ratio = 16.0 / 9.0
-	const width = 400
-	const height = int(width / aspect_ratio)
-	const samples_per_pixel = 100
-	const max_depth = 50
+	const (
+		aspect_ratio      = 3.0 / 2.0
+		width             = 1200
+		height            = int(width / aspect_ratio)
+		samples_per_pixel = 500
+		max_depth         = 50
+	)
 
 	// World
 
-	ground_mat := materials.Lambertian{Albedo: vec.NewColor(0.8, 0.8, 0.0)}
-	center_mat := materials.Lambertian{Albedo: vec.NewColor(0.1, 0.2, 0.5)}
-	left_mat := materials.Dielectric{Ir: 1.5}
-	right_mat := materials.Metal{Albedo: vec.NewColor(0.8, 0.6, 0.2), Fuzz: 0.0}
-
-	spheres := []sphere.Sphere{
-		sphere.NewSphere(vec.NewPoint3(0, -100.5, -1), 100, &ground_mat),
-		sphere.NewSphere(vec.NewPoint3(0, 0, -1), 0.5, &center_mat),
-		sphere.NewSphere(vec.NewPoint3(-1, 0, -1), 0.5, &left_mat),
-		sphere.NewSphere(vec.NewPoint3(-1, 0, -1), -0.45, &left_mat),
-		sphere.NewSphere(vec.NewPoint3(1, 0, -1), 0.5, &right_mat),
-	}
-
-	world := new(hittable.HittableList)
-	world.Add(&spheres[0], &spheres[1], &spheres[2], &spheres[3], &spheres[4])
+	world := random_scene()
 
 	// Camera
 
-	lookfrom := vec.NewPoint3(3, 3, 2)
-	lookat := vec.NewPoint3(0, 0, -1)
+	lookfrom := vec.NewPoint3(13, 2, 3)
+	lookat := vec.NewPoint3(0, 0, 0)
 	vup := vec.NewVec3(0, 1, 0)
-	dist_to_focus := lookfrom.Sub(lookat).Norm()
-	aperture := 2.0
+	dist_to_focus := 10.0
+	aperture := 0.1
 	cam := camera.New(lookfrom, lookat, vup, 20, aspect_ratio, aperture, dist_to_focus)
 
 	// Render

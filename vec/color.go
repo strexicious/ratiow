@@ -11,8 +11,9 @@ import (
 type Color = Vec3
 
 var ZeroColor = ZeroVec3
-
 var NewColor = NewVec3
+var RandomColor = RandomVec3
+var RandomColorRange = RandomVec3Range
 
 func (c Color) R() float64 {
 	return c.e[0]
